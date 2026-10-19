@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String   @id @default(uuid())
+  name       String
+  email      String   @unique
+  password   String
+  role         Role     @default(USER)
+  isActive     Boolean  @default(true)
+  company      String?
+  applications String[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  tickets      Ticket[]
+}
+
+model Ticket {
+  id                   String       @id @default(uuid())
+  ticketId             String       @unique
+  title                String
+  description          String
+  status               TicketStatus @default(OPEN)
+  priority             Priority     @default(MEDIUM)
+  affectedSystem       String?
+  severity             Severity?
+  application          String?
+  department           String?
+  problemCategory      String?
+  hardwareIssue        String?
+  softwareIssue        String?
+  networkIssue         String?
+  ifOtherPleaseSpecify String?
+  remarks              String?
+  company              String?
+  contactNumber        String?
+  workhubCardId        String?
+  workhubCardData      Json?
+  userId               String
+  user                 User         @relation(fields: [userId], references: [id])
+  attachments          Attachment[]
+  comments             Comment[]
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+}
+
+model Attachment {
+  id        String   @id @default(uuid())
+  filename  String
+  storedAs  String
+  mimetype  String
+  size      Int
+  ticketId  String
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  body      String
+  authorId  String
+  source    String   @default("system")
+  ticketId  String
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum Severity {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
